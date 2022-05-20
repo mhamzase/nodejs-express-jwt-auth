@@ -1,0 +1,65 @@
+<%- include('partials/header'); -%>
+
+<form action="/login">
+  <h2>Login</h2>
+  <div class="invalid-credentials error"></div>
+  <label for="email">Email</label>
+  <input type="text" name="email" required />
+  <div class="email error"></div>
+  <label for="password">Password</label>
+  <input type="password" name="password" required />
+  <div class="password error"></div>
+  <button>login</button>
+</form>
+
+<script>
+  let form = document.querySelector("form");
+  let emailError = document.querySelector(".email.error");
+  let passwordError = document.querySelector(".password.error");
+  let invalidCredentialsError = document.querySelector(".invalid-credentials.error")
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    // reset errors messages
+    emailError.textContent = "";
+    passwordError.textContent = "";
+    invalidCredentialsError.textContent = "";
+
+    // Get the form data
+    const email = form.email.value;
+    const password = form.password.value;
+
+    try {
+      const result = await fetch("/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await result.json();
+
+      if (data.errors) {
+        if(data.errors.invalid_credentials != "") {
+          invalidCredentialsError.textContent = data.errors.invalid_credentials;
+        }
+        emailError.textContent = data.errors.email;
+        passwordError.textContent = data.errors.password;
+      }
+
+      if (data.user) {
+        location.assign('/');
+      }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  });
+</script>
+
+<%- include('partials/footer'); -%>
